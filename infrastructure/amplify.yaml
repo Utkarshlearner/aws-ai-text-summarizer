@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Creating Amplify for AI-Summarizer"
+
+Parameters:
+  APPName:
+    Type: String
+    Description: "Name"
+    Default: "AISummarizer-ReactApp"
+
+Resources:
+  AmplifyApp:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: !Ref APPName
+      Platform: WEB
+      Repository: "" 
+      EnableBranchAutoDeletion: true
+      Tags:
+        - Key: Project
+          Value: AI-Summarizer
+        - Key: Environment
+          Value: Dev
+
+  AmplifyBranch:
+    Type: AWS::Amplify::Branch
+    Properties:
+      AppId: !GetAtt AmplifyApp.AppId
+      BranchName: dev
+      EnableAutoBuild: true 
+      Stage: DEVELOPMENT
+
+Outputs:
+  AmplifyAppId:
+    Description: "Amplify App ID"
+    Value: !GetAtt AmplifyApp.AppId
+
+  AmplifyAppURL:
+    Description: "Amplify App URL"
+    Value: !Sub "https://${AmplifyApp.DefaultDomain}"
+
+  AmplifyBranchName:
+    Description: "Amplify Branch Name"
+    Value: !Ref AmplifyBranch

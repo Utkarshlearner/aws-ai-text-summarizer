@@ -1,0 +1,124 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Creating DynamoDB Table for AI-Summarize"
+
+Parameters:
+  LambdaRoleName:
+    Type: String
+    Description: RoleName
+    Default: "AI-Lambda-BedRock-Role"
+  LambdaName:
+    Type: String
+    Description: Name of Lambda
+    Default: "AI-Summarization-Lambda"
+
+Resources:
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${LambdaName}
+      RetentionInDays: 1
+      Tags:
+        - Key: Project
+          Value: AI-Summarizer
+        - Key: Environment
+          Value: Dev
+
+  AILambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref LambdaName
+      Runtime: python3.9
+      Role: !Sub arn:aws:iam::${AWS::AccountId}:role/${LambdaRoleName}
+      Handler: index.lambda_handler
+      Timeout: 180
+      Code:
+        ZipFile: |          
+          import json
+          import boto3
+          import uuid
+
+          bedrock = boto3.client("bedrock-runtime")
+          dynamodb = boto3.resource("dynamodb")
+          table = dynamodb.Table("AISummaries")
+
+
+          def lambda_handler(event, context):
+              if "body" in event:
+                  try:
+                      body = json.loads(event["body"])  # If "body" exists, parse it
+                  except json.JSONDecodeError:
+                      return {"statusCode": 400, "body": json.dumps({"error": "Invalid JSON format"})}
+              else:
+                  body = event  
+
+              text = body.get("text", "").strip().lower()
+
+              print(f"Input text: {text}")
+
+              if not text:
+                  return {"statusCode": 400, "body": json.dumps({"error": "Missing text input"})}
+
+              # Check DynamoDB for existing summary
+              try:
+                  response = table.get_item(Key={"text": text})
+                  if "Item" in response:
+                      print("Found in DynamoDB, returning cached summary.")
+                      return {
+                          "statusCode": 200,
+                          "headers": {
+                              "Access-Control-Allow-Origin": "*",
+                              "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                              "Access-Control-Allow-Headers": "Content-Type"
+                          },
+                          "body": json.dumps({"summary": response["Item"]["summary"]})
+                      }
+              except Exception as e:
+                  print(f"Error checking DynamoDB: {str(e)}")
+
+              # Call AWS Bedrock if summary not found in DynamoDB
+              try:
+                  response = bedrock.invoke_model(
+                      modelId="amazon.titan-text-express-v1",
+                      contentType="application/json",
+                      accept="application/json",
+                      body=json.dumps({"inputText": text})
+                  )
+
+                  response_body = json.loads(response["body"].read().decode("utf-8"))
+
+                  summary = response_body.get("results", [{}])[0].get("outputText", "No summary available")
+
+                  print(f"Generated Summary: {summary}")
+
+                  # Store in DynamoDB
+                  item = {
+                      "id": str(uuid.uuid4()), 
+                      "text": text,
+                      "summary": summary
+                  }
+                  table.put_item(Item=item)
+
+                  return {
+                      "statusCode": 200,
+                      "headers": {
+                          "Access-Control-Allow-Origin": "*",
+                          "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                          "Access-Control-Allow-Headers": "Content-Type"
+                      },
+                      "body": json.dumps({"summary": summary})
+                  }
+
+              except Exception as e:
+                  print(f"Error calling Bedrock: {str(e)}")
+                  return {
+                      "statusCode": 500,
+                      "body": json.dumps({"error": "Failed to generate summary."})
+                  }
+
+      Tags:
+        - Key: Project
+          Value: AI-Summarizer
+        - Key: Environment
+          Value: Dev
+          
+             

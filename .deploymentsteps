@@ -1,0 +1,21 @@
+
+1) Creating IAM Role
+
+aws cloudformation create-stack --stack-name AI-Summarization-IAM-Role --template-body file://iam.yaml --capabilities CAPABILITY_NAMED_IAM
+
+2) Creating DynamoDB Table
+
+aws cloudformation create-stack --stack-name AI-Summarization-DynamoDB-Table --template-body file://dynamodb.yaml --capabilities CAPABILITY_NAMED_IAM
+
+3) Creating Lambda
+
+aws cloudformation create-stack --stack-name AI-Summarization-Lambda --template-body file://lambda.yaml --capabilities CAPABILITY_NAMED_IAM
+
+4) Creating APIGateway
+
+aws cloudformation create-stack --stack-name AI-Summarization-APIGateway --template-body file://apigateway.yaml --capabilities CAPABILITY_NAMED_IAM
+
+
+5) Creating Amplify
+
+aws cloudformation create-stack --stack-name AI-Summarization-Amplify --template-body file://amplify.yaml --capabilities CAPABILITY_NAMED_IAM

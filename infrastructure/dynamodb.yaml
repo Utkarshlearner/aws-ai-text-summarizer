@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Creating DynamoDB Table for AI-Summarizer"
+
+Parameters:
+  TableName:
+    Type: String
+    Description: Name of Table
+    Default: "AISummaries"
+
+Resources:
+  SummariesTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: !Ref TableName
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - AttributeName: text
+          AttributeType: S  
+      KeySchema:
+        - AttributeName: text
+          KeyType: HASH 
+      BillingMode: PAY_PER_REQUEST 
+      SSESpecification:
+        SSEEnabled: true 
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true 
+      Tags:
+        - Key: Project
+          Value: AI-Summarizer
+        - Key: Environment
+          Value: Dev
+
+
+
+
+
+
