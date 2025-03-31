@@ -25,3 +25,13 @@ API Gateway – Exposes API for frontend
 DynamoDB – Caches summaries to reduce API calls
 React.js – Frontend UI (hosted on AWS Amplify/S3)
 CloudFormation – Infrastructure as Code (IaC)
+
+🛠️ Prerequisites 
+
+AWS Account
+AWS CLI Installed & Configured
+Node.js & npm Installed
+Python 3.x Installed
+
+Author
+Utkarsh Rastogi
