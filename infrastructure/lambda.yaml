@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Creating DynamoDB Table for AI-Summarize"
+Description: "Creating Lambda for AI-Summarize"
 
 Parameters:
   LambdaRoleName:
