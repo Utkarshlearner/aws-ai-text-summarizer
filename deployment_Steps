@@ -1,21 +1,19 @@
+🚀 Deployment Steps
+Make sure the AWS CLI is configured (aws configure) before running these commands.
 
-1) Creating IAM Role
-
+1) Create IAM Role
 aws cloudformation create-stack --stack-name AI-Summarization-IAM-Role --template-body file://iam.yaml --capabilities CAPABILITY_NAMED_IAM
 
-2) Creating DynamoDB Table
 
+2) Create DynamoDB Table
 aws cloudformation create-stack --stack-name AI-Summarization-DynamoDB-Table --template-body file://dynamodb.yaml --capabilities CAPABILITY_NAMED_IAM
 
-3) Creating Lambda
 
+3) Create Lambda Function
 aws cloudformation create-stack --stack-name AI-Summarization-Lambda --template-body file://lambda.yaml --capabilities CAPABILITY_NAMED_IAM
 
-4) Creating APIGateway
-
+4) Create API Gateway
 aws cloudformation create-stack --stack-name AI-Summarization-APIGateway --template-body file://apigateway.yaml --capabilities CAPABILITY_NAMED_IAM
 
-
-5) Creating Amplify
-
+5) Create Amplify Hosting
 aws cloudformation create-stack --stack-name AI-Summarization-Amplify --template-body file://amplify.yaml --capabilities CAPABILITY_NAMED_IAM

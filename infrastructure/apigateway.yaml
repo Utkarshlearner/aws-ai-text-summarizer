@@ -5,9 +5,9 @@ Parameters:
   APIGatewayName:
     Type: String
     Default: "AI-Summarizer-API"
-  LambdaFunctionArn:
+  LambdaFunctionName:
     Type: String
-    Default: "arn:aws:lambda:ap-south-1:183295413495:function:AI-Summarization-Lambda"
+    Default: "AI-Summarization-Lambda"
 
 Resources:
   ApiGatewayLogGroup:
@@ -15,6 +15,11 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/apigateway/${APIGatewayName}"
       RetentionInDays: 7
+      Tags:
+        - Key: Project
+          Value: AI-Summarizer
+        - Key: Environment
+          Value: Dev
 
   ApiGateway:
     Type: AWS::ApiGateway::RestApi
@@ -24,6 +29,11 @@ Resources:
       EndpointConfiguration:
         Types: 
           - REGIONAL
+      Tags:
+        - Key: Project
+          Value: AI-Summarizer
+        - Key: Environment
+          Value: Dev
 
   ApiResource:
     Type: AWS::ApiGateway::Resource
@@ -42,7 +52,7 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunctionArn}/invocations"
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${LambdaFunctionName}/invocations"
       MethodResponses:
         - StatusCode: 200
           ResponseParameters:
@@ -96,11 +106,16 @@ Resources:
           LoggingLevel: INFO
           DataTraceEnabled: true
           MetricsEnabled: true
+      Tags:
+        - Key: Project
+          Value: AI-Summarizer
+        - Key: Environment
+          Value: Dev
 
   LambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref LambdaFunctionArn 
+      FunctionName: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${LambdaFunctionName}
       Action: "lambda:InvokeFunction"
       Principal: "apigateway.amazonaws.com"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*"
@@ -113,6 +128,9 @@ Resources:
       Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/dev/summarize"
       Description: "AI Summarizer API Gateway Endpoint"
       Tier: Standard
+      Tags:
+        Project: AI-Summarizer
+        Environment: Dev
 
 Outputs:
   APIEndpoint:
